@@ -1,0 +1,3 @@
+file description: rec. 709 with xvYcc gamma curve
+color primaries: 0.64 0.33 0.30 0.60 0.15 0.06
+gamma curve params: alpha:1.099, beta:0.018, gamma:0.45, delta:4.5
