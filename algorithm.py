@@ -134,6 +134,7 @@ cbp_vlc_table = {
     '0001 0000': 43,         # CBP = 43
     '0000 1111': 25,         # CBP = 25
     '0000 1110': 37,         # CBP = 37
+    '0000 1101': 26,
     '0000 1100': 38,         # CBP = 38
     '0000 1011': 29,         # CBP = 29
     '0000 1010': 45,         # CBP = 45
@@ -141,12 +142,14 @@ cbp_vlc_table = {
     '0000 1000': 57,         # CBP = 57
     '0000 0111': 30,         # CBP = 30
     '0000 0110': 46,         # CBP = 46
-    '0000 0101 1': 31,       # CBP = 31
-    '0000 0101 0': 47,       # CBP = 47
-    '0000 0100 1': 55,       # CBP = 55
-    '0000 0100 0': 59,       # CBP = 59
-    '0000 0011 1': 27,       # CBP = 27
-    '0000 0011 0': 39,       # CBP = 39
+    '0000 0101': 54,
+    '0000 0100': 58,
+    '0000 0011 1': 31,       # CBP = 31
+    '0000 0011 0': 47,       # CBP = 47
+    '0000 0010 1': 55,       # CBP = 55
+    '0000 0010 0': 59,       # CBP = 59
+    '0000 0001 1': 27,       # CBP = 27
+    '0000 0001 0': 39,       # CBP = 39
 }
 # VLC table for TCOEFF as a Python dictionary
 vlc_table_tcoeff = {
@@ -264,7 +267,7 @@ mtype_properties_table = {
     '0001': {'MQUANT': False, 'MVD': False, 'CBP': False, 'TCOEFF': True, "Prediction": "Intra"},  # Intra
     '0000 001': {'MQUANT': True, 'MVD': False, 'CBP': False, 'TCOEFF': True, "Prediction": "Intra + MQUANT"},
     # Intra + MQUANT
-    '1': {'MQUANT': True, 'MVD': False, 'CBP': True, 'TCOEFF': True, "Prediction": "Inter"},  # Inter
+    '1': {'MQUANT': False, 'MVD': False, 'CBP': True, 'TCOEFF': True, "Prediction": "Inter"},  # Inter
     '0000 1': {'MQUANT': True, 'MVD': False, 'CBP': True, 'TCOEFF': True, "Prediction": "Inter + MQUANT"},
     # Inter + MQUANT
     '0000 0000 1': {'MQUANT': False, 'MVD': True, 'CBP': False, 'TCOEFF': False, "Prediction": "Inter + MC"},

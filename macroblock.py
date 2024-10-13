@@ -56,6 +56,7 @@ class MacroblockParser:
         cbp = None
         if mtype_properties["CBP"]:
             cbp, current_index, clean_code = decode_vlc(bit_string, current_index, end_index, cbp_vlc_table)
+            mtype_properties["CBPValue"] = cbp
 
         # Parse Block Data if indicated by MTYPE
         block_data = None
@@ -89,7 +90,7 @@ class MacroblockParser:
         # Parse each block based on CBP and mtype
         for block_index in range(1, 7):  # H.261 has 6 blocks (4 Y, 1 Cb, 1 Cr)
             isIntra = "Intra" in mtype_properties["Prediction"]
-            if isIntra or Block.block_contains_coeffs(mtype_properties["CBP"], block_index):
+            if isIntra or Block.block_contains_coeffs(mtype_properties["CBPValue"], block_index):
                 block = Block(mtype=mtype_properties, quant=mquant, block_order=block_index)
                 block_offset = block._parse_block(bit_string, current_index, end_index)
                 block_data.append(block.tCoeffs64)
