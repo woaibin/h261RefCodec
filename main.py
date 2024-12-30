@@ -16,6 +16,7 @@ if executable_path:
 else:
     print(f"Executable {executable_name} not found in PATH")
 
+
 def parse_input_file(input_file):
     """Parse the input configuration file."""
     config = {}

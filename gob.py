@@ -1,5 +1,6 @@
 from macroblock import MacroblockParser, Macroblock
-
+import globalVar
+from typing import List  # Import List for type hinting
 
 class GOB:
     """
@@ -27,9 +28,13 @@ class GOB:
         self.gquant = gquant
         self.gei = gei
         self.gspare_size = gspare_size
-        self.macroblocks = []  # List to hold parsed macroblocks
+        self.macroblocks: List[Macroblock] = []  # List to hold parsed macroblocks
+        self.enable_print = False
 
     def __str__(self):
+        if not self.enable_print:
+            return ""
+
         macroblock_str = "\n\t".join([str(mb) for mb in self.macroblocks])
         return (f"GOB(start_bit_position={self.start_bit_position}, gn={self.gn}, "
                 f"gquant={self.gquant}, gei={self.gei}, gspare_size={self.gspare_size}, "
@@ -89,11 +94,13 @@ class GOBParser:
 
         # Parse macroblocks within the GOB
         while current_index < end_index:
+            last_index = current_index
+            #print(f"bxk log out current index: {current_index}")
             macroblock, current_index, mba = self.macroblock_parser._parse_macroblock(bit_string, current_index,
                                                                                       end_index, gquant)
             if macroblock is not None:
                 gob.macroblocks.append(macroblock)
-            if str(mba) == "MBA stuffing" or str(mba) == "Start code":
+            if str(mba) == "MBA stuffing" or str(mba) == "Start code" or mba == -1:
                 # stuffing next gob is coming, just return:
                 if str(mba) == "Start code":
                     current_index -= 16  # offset back for next gob parsing

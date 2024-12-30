@@ -2,7 +2,8 @@
 
 import os
 from picture import PictureParser
-
+import globalVar
+import reconstruction
 
 class H261Parser:
     """
@@ -31,6 +32,11 @@ class H261Parser:
         while True:
             start_index = bit_string.find(PictureParser.PICTURE_START_CODE, current_position)
 
+            globalVar.pictureStart = start_index
+
+            if start_index == -1:
+                break
+
             start_index += 20
 
             if start_index == -1:
@@ -53,7 +59,8 @@ def get_file_bitstream():
     """
     Function to get a file path from the user, read the file, and return its content as a bytearray.
     """
-    file_path = input("Enter the path to the bitstream file: ")
+    #file_path = input("Enter the path to the bitstream file: ")
+    file_path = "output.h261"
 
     if not os.path.isfile(file_path):
         print(f"File not found: {file_path}")
@@ -76,9 +83,14 @@ def main():
         parser = H261Parser(bitstream)
         pictures = parser.parse()
 
-        print("\nParsed Pictures:")
-        for picture in pictures:
-            print(picture)
+        # print("\nParsed Pictures:")
+        # for picture in pictures:
+        #     print(picture)
+        # go reconstruction:
+        reconstruct = reconstruction.Reconstruction
+        for pic in pictures:
+            reconstruct_pic = reconstruct.reconstruct_pic(pic)
+
     else:
         print("No valid bitstream provided.")
 

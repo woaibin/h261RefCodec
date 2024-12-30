@@ -1,6 +1,7 @@
 # picture.py
 
 from gob import GOBParser
+import globalVar
 
 """
 A class to represent an H.261 picture layer.
@@ -33,8 +34,12 @@ class Picture:
         self.pei = pei
         self.pspare_size = pspare_size
         self.gobs = []  # To store GOB objects
+        self.enable_print = False
 
     def __str__(self):
+        if not self.enable_print:
+            return ""
+
         gob_str = ""
         for gob in self.gobs:
             gob_str += "\n\t\t" + gob.__str__()

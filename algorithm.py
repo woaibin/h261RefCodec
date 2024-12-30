@@ -1,3 +1,5 @@
+import numpy as np
+import math
 # VLC tables for MBA, MTYPE, MVD, and CBP
 mba_vlc_table = {
     '1': 1,
@@ -37,20 +39,18 @@ mba_vlc_table = {
     '0000 0001 111': 'MBA stuffing',
     '0000 0000 0000 0001': 'Start code'
 }
-
 mtype_vlc_table = {
-    '0001': 'Intra',                   # Intra
-    '0000 001': 'Intra + MQUANT',       # Intra + MQUANT
-    '1': 'Inter',                       # Inter
-    '0000 1': 'Inter + MQUANT',         # Inter + MQUANT
-    '0000 0000 1': 'Inter + MC',        # Inter + MC
-    '0000 0001': 'Inter + MC + MQUANT', # Inter + MC + MQUANT
-    '0000 0000 01': 'Inter + MC + MQUANT', # Inter + MC + MQUANT (alternate VLC)
-    '001': 'Inter + MC + FIL',           # Inter + MC + FIL
-    '01': 'Inter + MC + FIL',           # Inter + MC + FIL
-    '0000 01': 'Inter + MC + FIL + MQUANT', # Inter + MC + FIL + MQUANT
+    '0001': 'Intra',  # Intra
+    '0000 001': 'Intra + MQUANT',  # Intra + MQUANT
+    '1': 'Inter',  # Inter
+    '0000 1': 'Inter + MQUANT',  # Inter + MQUANT
+    '0000 0000 1': 'Inter + MC',  # Inter + MC
+    '0000 0001': 'Inter + MC + MQUANT',  # Inter + MC + MQUANT
+    '0000 0000 01': 'Inter + MC + MQUANT',  # Inter + MC + MQUANT (alternate VLC)
+    '001': 'Inter + MC + FIL',  # Inter + MC + FIL
+    '01': 'Inter + MC + FIL',  # Inter + MC + FIL
+    '0000 01': 'Inter + MC + FIL + MQUANT',  # Inter + MC + FIL + MQUANT
 }
-
 mvd_vlc_table = {
     '0000 0011 001': (-16, 16),
     '0000 0011 011': (-15, 17),
@@ -67,9 +67,9 @@ mvd_vlc_table = {
     '0000 111': (-4, 28),
     '0001 1': (-3, 29),
     '0011': (-2, 30),
-    '011': (-1,),
-    '1': (0,),
-    '010': (1,),
+    '011': (-1,-1),
+    '1': (0,0),
+    '010': (1,1),
     '0010': (2, -30),
     '0001 0': (3, -29),
     '0000 110': (4, -28),
@@ -85,71 +85,70 @@ mvd_vlc_table = {
     '0000 0011 100': (14, -18),
     '0000 0011 010': (15, -17)
 }
-
 cbp_vlc_table = {
-    '111': 60,               # CBP = 60
-    '1101': 4,               # CBP = 4
-    '1100': 8,               # CBP = 8
-    '1011': 16,              # CBP = 16
-    '1010': 32,              # CBP = 32
-    '1001 1': 12,            # CBP = 12
-    '1001 0': 48,            # CBP = 48
-    '1000 1': 20,            # CBP = 20
-    '1000 0': 40,            # CBP = 40
-    '0111 1': 28,            # CBP = 28
-    '0111 0': 44,            # CBP = 44
-    '0110 1': 52,            # CBP = 52
-    '0110 0': 56,            # CBP = 56
-    '0101 1': 1,             # CBP = 1
-    '0101 0': 61,            # CBP = 61
-    '0100 1': 2,             # CBP = 2
-    '0100 0': 62,            # CBP = 62
-    '0011 11': 24,           # CBP = 24
-    '0011 10': 36,           # CBP = 36
-    '0011 01': 3,            # CBP = 3
-    '0011 00': 63,           # CBP = 63
-    '0010 111': 5,           # CBP = 5
-    '0010 110': 9,           # CBP = 9
-    '0010 101': 17,          # CBP = 17
-    '0010 100': 33,          # CBP = 33
-    '0010 011': 6,           # CBP = 6
-    '0010 010': 10,          # CBP = 10
-    '0010 001': 18,          # CBP = 18
-    '0010 000': 34,          # CBP = 34
-    '0001 1111': 7,          # CBP = 7
-    '0001 1110': 11,         # CBP = 11
-    '0001 1101': 19,         # CBP = 19
-    '0001 1100': 35,         # CBP = 35
-    '0001 1011': 13,         # CBP = 13
-    '0001 1010': 49,         # CBP = 49
-    '0001 1001': 21,         # CBP = 21
-    '0001 1000': 41,         # CBP = 41
-    '0001 0111': 14,         # CBP = 14
-    '0001 0110': 50,         # CBP = 50
-    '0001 0101': 22,         # CBP = 22
-    '0001 0100': 42,         # CBP = 42
-    '0001 0011': 15,         # CBP = 15
-    '0001 0010': 51,         # CBP = 51
-    '0001 0001': 23,         # CBP = 23
-    '0001 0000': 43,         # CBP = 43
-    '0000 1111': 25,         # CBP = 25
-    '0000 1110': 37,         # CBP = 37
+    '111': 60,  # CBP = 60
+    '1101': 4,  # CBP = 4
+    '1100': 8,  # CBP = 8
+    '1011': 16,  # CBP = 16
+    '1010': 32,  # CBP = 32
+    '1001 1': 12,  # CBP = 12
+    '1001 0': 48,  # CBP = 48
+    '1000 1': 20,  # CBP = 20
+    '1000 0': 40,  # CBP = 40
+    '0111 1': 28,  # CBP = 28
+    '0111 0': 44,  # CBP = 44
+    '0110 1': 52,  # CBP = 52
+    '0110 0': 56,  # CBP = 56
+    '0101 1': 1,  # CBP = 1
+    '0101 0': 61,  # CBP = 61
+    '0100 1': 2,  # CBP = 2
+    '0100 0': 62,  # CBP = 62
+    '0011 11': 24,  # CBP = 24
+    '0011 10': 36,  # CBP = 36
+    '0011 01': 3,  # CBP = 3
+    '0011 00': 63,  # CBP = 63
+    '0010 111': 5,  # CBP = 5
+    '0010 110': 9,  # CBP = 9
+    '0010 101': 17,  # CBP = 17
+    '0010 100': 33,  # CBP = 33
+    '0010 011': 6,  # CBP = 6
+    '0010 010': 10,  # CBP = 10
+    '0010 001': 18,  # CBP = 18
+    '0010 000': 34,  # CBP = 34
+    '0001 1111': 7,  # CBP = 7
+    '0001 1110': 11,  # CBP = 11
+    '0001 1101': 19,  # CBP = 19
+    '0001 1100': 35,  # CBP = 35
+    '0001 1011': 13,  # CBP = 13
+    '0001 1010': 49,  # CBP = 49
+    '0001 1001': 21,  # CBP = 21
+    '0001 1000': 41,  # CBP = 41
+    '0001 0111': 14,  # CBP = 14
+    '0001 0110': 50,  # CBP = 50
+    '0001 0101': 22,  # CBP = 22
+    '0001 0100': 42,  # CBP = 42
+    '0001 0011': 15,  # CBP = 15
+    '0001 0010': 51,  # CBP = 51
+    '0001 0001': 23,  # CBP = 23
+    '0001 0000': 43,  # CBP = 43
+    '0000 1111': 25,  # CBP = 25
+    '0000 1110': 37,  # CBP = 37
     '0000 1101': 26,
-    '0000 1100': 38,         # CBP = 38
-    '0000 1011': 29,         # CBP = 29
-    '0000 1010': 45,         # CBP = 45
-    '0000 1001': 53,         # CBP = 53
-    '0000 1000': 57,         # CBP = 57
-    '0000 0111': 30,         # CBP = 30
-    '0000 0110': 46,         # CBP = 46
+    '0000 1100': 38,  # CBP = 38
+    '0000 1011': 29,  # CBP = 29
+    '0000 1010': 45,  # CBP = 45
+    '0000 1001': 53,  # CBP = 53
+    '0000 1000': 57,  # CBP = 57
+    '0000 0111': 30,  # CBP = 30
+    '0000 0110': 46,  # CBP = 46
     '0000 0101': 54,
     '0000 0100': 58,
-    '0000 0011 1': 31,       # CBP = 31
-    '0000 0011 0': 47,       # CBP = 47
-    '0000 0010 1': 55,       # CBP = 55
-    '0000 0010 0': 59,       # CBP = 59
-    '0000 0001 1': 27,       # CBP = 27
-    '0000 0001 0': 39,       # CBP = 39
+    '0000 0011 1': 31,  # CBP = 31
+    '0000 0011 0': 47,  # CBP = 47
+    '0000 0010 1': 55,  # CBP = 55
+    '0000 0010 0': 59,  # CBP = 59
+    '0000 0001 1': 27,  # CBP = 27
+    '0000 0001 0': 39,  # CBP = 39
 }
 # VLC table for TCOEFF as a Python dictionary
 vlc_table_tcoeff = {
@@ -232,7 +231,7 @@ vlc_table_tcoeff = {
 
     '0000 01': ('Escape', None)
 }
-vlc_table_block_order = {
+zig_zag_order = {
     1: 1, 2: 2, 6: 3, 7: 4, 15: 5, 16: 6, 28: 7, 29: 8,
     3: 9, 5: 10, 8: 11, 14: 12, 17: 13, 27: 14, 30: 15, 43: 16,
     4: 17, 9: 18, 13: 19, 18: 20, 26: 21, 31: 22, 42: 23, 44: 24,
@@ -247,21 +246,17 @@ escape_run_codes = {
     run: format(run, '06b')  # Convert run to a 6-bit binary string
     for run in range(64)  # Run values from 0 to 63
 }
-
 # ESCAPE mode: Level fixed-length codes (8 bits)
 # Level range is from -128 to 127, but some values are forbidden
 escape_level_codes = {}
-
 # Forbidden codes (forbidden levels: -128, 0)
 forbidden_levels = {-128, 0}
-
 # Populate level codes
 for level in range(-128, 128):
     if level in forbidden_levels:
         escape_level_codes[level] = "FORBIDDEN"
     else:
         escape_level_codes[level] = format((level + 256) % 256, '08b')  # Convert level to 8-bit signed binary
-
 # New table to define the presence of MQUANT, MVD, CBP, and TCOEFF based on MTYPE VLC
 mtype_properties_table = {
     '0001': {'MQUANT': False, 'MVD': False, 'CBP': False, 'TCOEFF': True, "Prediction": "Intra"},  # Intra
@@ -274,7 +269,8 @@ mtype_properties_table = {
     # Inter + MC
     '0000 0001': {'MQUANT': False, 'MVD': True, 'CBP': True, 'TCOEFF': True, "Prediction": "Inter + MC + MQUANT"},
     # Inter + MC + MQUANT
-    '0000 0000 01': {'MQUANT': True, 'MVD': True, 'CBP': True, 'TCOEFF': True, "Prediction": "Inter + MC + CBP + TCOEFF"},  # Inter + MC + CBP + TCOEFF
+    '0000 0000 01': {'MQUANT': True, 'MVD': True, 'CBP': True, 'TCOEFF': True,
+                     "Prediction": "Inter + MC + CBP + TCOEFF"},  # Inter + MC + CBP + TCOEFF
     '001': {'MQUANT': False, 'MVD': True, 'CBP': False, 'TCOEFF': False, "Prediction": "Inter + MC + CBP + TCOEFF"},
     '01': {'MQUANT': False, 'MVD': True, 'CBP': True, 'TCOEFF': True, "Prediction": "Inter + MC + FIL + MQUANT"},
     # Inter + MC + FIL + MQUANT
@@ -284,7 +280,7 @@ mtype_properties_table = {
 }
 
 
-def decode_vlc(bit_string, start_index, end_index, vlc_table):
+def decode_vlc(bit_string, start_index, end_index, vlc_table, no_err=False):
     """
     Decode a field encoded with Variable-Length Code (VLC).
     :param bit_string: The bitstream as a bit string.
@@ -299,11 +295,15 @@ def decode_vlc(bit_string, start_index, end_index, vlc_table):
         if code is None:
             continue
         clean_code = code.replace(" ", "")
-        clean_code = clean_code.replace("s", "") #remove sign mark, they are marked for telling u they exists
+        clean_code = clean_code.replace("s", "")  #remove sign mark, they are marked for telling u they exists
         if bit_string[current_index:current_index + len(clean_code)] == clean_code:
             current_index += len(clean_code)
             return value, current_index, clean_code
-    raise ValueError("VLC code not found in the table")
+
+    if not no_err:
+        raise ValueError("VLC code not found in the table")
+    else:
+        return -1, current_index, -1
 
 
 def check_mtype_properties(vlc_code):
@@ -316,3 +316,42 @@ def check_mtype_properties(vlc_code):
         key.replace(' ', ''): value for key, value in mtype_properties_table.items()
     }
     return mtype_properties_table_clean.get(vlc_code, None)
+
+def idct_2d(F, verbose=False):
+    # Normalization factor function
+    def C(val):
+        return 1 / math.sqrt(2) if val == 0 else 1
+
+    N = 8  # Size of the block (8x8)
+    f = np.zeros((N, N))  # Output block
+
+    # Compute the inverse DCT
+    for x in range(N):
+        for y in range(N):
+            sum_val = 0
+            for u in range(N):
+                for v in range(N):
+                    # Cosine terms
+                    cos_xu = math.cos((math.pi * (2 * x + 1) * u) / (2 * N))
+                    cos_yv = math.cos((math.pi * (2 * y + 1) * v) / (2 * N))
+
+                    # Accumulate the sum
+                    index = u * 8 + v
+                    sum_val += C(u) * C(v) * F[index] * cos_xu * cos_yv
+
+            # Multiply by the scaling factor (1/4)
+            f[x, y] = (1 / 4) * sum_val
+
+    # Clip values to the range [-256, 255] as per specification
+    f = np.clip(f, -256, 255)
+    rounded_2d_list = [[round(val) for val in row] for row in f]
+    rounded_2d_list = rounded_2d_list
+
+    # If verbose is True, print the input coefficients and output values
+    if verbose:
+        print("Input DCT Coefficients (F):")
+        print(F)
+        print("\nReconstructed 8x8 Block (Spatial Domain) (f):")
+        print(rounded_2d_list)
+
+    return rounded_2d_list

@@ -2,6 +2,7 @@ import algorithm
 from algorithm import decode_vlc, vlc_table_tcoeff
 import warnings
 
+
 class Block:
     def __init__(self, mtype, quant, block_order, cbp=None):
         self.cbp = cbp
@@ -9,6 +10,15 @@ class Block:
         self.quant = quant
         self.tCoeffs64 = [0] * 64  # 64 coeffs
         self.block_order = block_order
+        self.block_index = block_order
+        self.decoded_block_data_64 = [0] * 64
+        self.enable_print = False
+
+    def __str__(self):
+        if not self.enable_print:
+            return ""
+
+        return "block"
 
     def calculate_rec(self, level, quant):
         """
@@ -51,6 +61,9 @@ class Block:
         rec = max(clip_min, min(clip_max, rec))
 
         return rec
+
+    def has_coeffs(self):
+        return self.block_contains_coeffs(self.cbp, self.block_index)
 
     @staticmethod
     def block_contains_coeffs(cbp_value, block_index):
@@ -119,14 +132,15 @@ class Block:
             elif value[0] == "Escape":
                 inEscape = True
                 # handle escape, run is a 6 bit fixed length code, level is an 8 bit fixed length code:
-                run_bit_str = bit_string[start_index + currentStrWalkThroughIdx:start_index + currentStrWalkThroughIdx+6]
-                level_bit_str = bit_string[start_index + currentStrWalkThroughIdx:start_index + currentStrWalkThroughIdx+6+8]
+                run_bit_str = bit_string[
+                              start_index + currentStrWalkThroughIdx:start_index + currentStrWalkThroughIdx + 6]
+                level_bit_str = bit_string[
+                                start_index + currentStrWalkThroughIdx:start_index + currentStrWalkThroughIdx + 6 + 8]
                 currentStrWalkThroughIdx += 14
                 run = int(run_bit_str, 2)
                 level = int(level_bit_str, 2)
-
-            # handle sign bit:
-            if not inEscape:
+            else:
+                # handle sign bit:
                 sign_bit_str = bit_string[start_index + currentStrWalkThroughIdx]
                 sign_bit = int(sign_bit_str, 2)
                 sign = 1
@@ -138,8 +152,7 @@ class Block:
                 run = value[0]
                 level = value[1]
                 level = sign * level
-            reconstructedLevel = self.calculate_rec(level, self.quant)
-            self.tCoeffs64[currentCoeffIdx + run] = reconstructedLevel
+            self.tCoeffs64[currentCoeffIdx + run] = level
             #currentCoeffIdx += run + 1
 
         # return how much len it has walked through:
